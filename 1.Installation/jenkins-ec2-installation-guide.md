@@ -39,7 +39,7 @@ Install Java:
 sudo apt-get update
 
 # Install OpenJDK 11 (recommended)
-sudo apt-get install openjdk-11-jdk -y
+sudo apt-get install openjdk-21-jdk -y
 
 # Verify Java installation
 java -version
