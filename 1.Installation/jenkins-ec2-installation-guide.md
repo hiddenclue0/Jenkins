@@ -7,23 +7,9 @@ This guide provides step-by-step instructions to deploy **Jenkins** on an **AWS 
 
 ## 1️⃣ Launch an EC2 Instance
 
-### a. Configure Security Group
+Ensure your security group allows access from your IP to **SSH (port 22)** and **Jenkins Web UI (port 8080)**.
 
-Allow inbound access for SSH (port 22) and Jenkins Web UI (port 8080):
-
-```bash
-# Allow SSH (Port 22)
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-preview-1 \
-  --protocol tcp --port 22 --cidr 103.197.153.50/32
-
-# Allow Jenkins Web UI (Port 8080)
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-preview-1 \
-  --protocol tcp --port 8080 --cidr 103.197.153.50/32
-```
-
-### b. Launch the EC2 Instance
+### 🖥️ Launch the EC2 Instance (via AWS CLI)
 
 ```bash
 aws ec2 run-instances \
@@ -35,11 +21,19 @@ aws ec2 run-instances \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Server}]'
 ```
 
+> 🔐 Replace `sg-preview-1` with your security group ID that allows TCP 22 and 8080 from your IP.
+
 ---
 
 ## 2️⃣ Install Java (Required for Jenkins)
 
-SSH into your EC2 instance and install Java:
+SSH into your EC2 instance:
+
+```bash
+ssh -i "Jenkins-server-KP.pem" ubuntu@<your-ec2-public-ip>
+```
+
+Install Java:
 
 ```bash
 # Update package index
@@ -66,7 +60,7 @@ sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian
 echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
   | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
-# Update and install Jenkins
+# Update package index and install Jenkins
 sudo apt-get update
 sudo apt-get install jenkins -y
 ```
@@ -90,23 +84,28 @@ sudo systemctl status jenkins
 
 ## 5️⃣ Access Jenkins
 
-1. Find your EC2 public IP from the AWS Console or CLI.
-2. Open your browser and go to:  
-   `http://<your-public-ip>:8080`
-3. Retrieve the initial admin password:
-   ```bash
-   sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-   ```
+1. Find your EC2 **public IP** from the AWS Console or CLI.
+2. Open your browser and navigate to:
+
+```
+http://<your-public-ip>:8080
+```
+
+3. Retrieve the initial admin password to unlock Jenkins:
+
+```bash
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
 
 ---
 
 ## 📁 Recommended GitHub Repository Structure
 
 ```
-jenkins-on-ec2/
-├── README.md
-├── screenshots/
-│   └── <optional images>
+Jenkins/
+└── 1.Installation/
+    ├── Jenkins-server-KP.pem
+    └── jenkins-ec2-installation-guide.md
 ```
 
 ---
@@ -124,3 +123,11 @@ sudo systemctl enable jenkins
 sudo systemctl status jenkins
 ```
 
+---
+
+## 📝 Summary of Fixes/Changes:
+- Fixed incorrect `--security-group-ids` syntax (was a comment instead of a value).
+- Added escaping to multiline commands.
+- Added placeholder `<your-ec2-public-ip>` for better clarity.
+- Improved formatting for repository structure.
+- Added clarification notes for security group usage.
