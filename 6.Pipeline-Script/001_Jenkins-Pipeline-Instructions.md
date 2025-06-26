@@ -49,7 +49,7 @@ pipeline {
     stages {
         stage('Fetch code') {
             steps {
-                git branch: 'atom', url: 'https://github.com/hkhcoder/vprofile-project.git'
+                git branch: 'main', url: 'https://github.com/hiddenclue0/vprofileApp-jenkins-cicd-automation.git'
             }
         }
 
