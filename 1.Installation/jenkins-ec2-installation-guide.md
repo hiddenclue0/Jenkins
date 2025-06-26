@@ -6,9 +6,12 @@ This guide provides step-by-step instructions to deploy **Jenkins** on an **AWS 
 
 ## 1️⃣ Launch an EC2 Instance
 
-Ensure your security group allows access from your IP to **SSH (port 22)** and **Jenkins Web UI (port 8080)**.
+Ensure your **security group** allows access from your IP to:
 
-### 🖥️ Launch the EC2 Instance (via AWS CLI)
+- **SSH** (port **22**)
+- **Jenkins Web UI** (port **8080**)
+
+### 🖥️ Launch via AWS CLI
 
 ```bash
 aws ec2 run-instances \
@@ -38,8 +41,11 @@ Install Java:
 # Update package index
 sudo apt-get update
 
-# Install OpenJDK 11 (recommended)
-sudo apt-get install openjdk-11-jdk -y
+# Upgrade packages
+sudo apt-get upgrade -y
+
+# Install OpenJDK 21
+sudo apt-get install openjdk-21-jdk -y
 
 # Verify Java installation
 java -version
@@ -49,7 +55,7 @@ java -version
 
 ## 3️⃣ Install Jenkins
 
-Still on your EC2 instance, run:
+Run the following commands on your EC2 instance:
 
 ```bash
 # Download Jenkins GPG key
@@ -84,17 +90,27 @@ sudo systemctl status jenkins
 ## 5️⃣ Access Jenkins
 
 1. Find your EC2 **public IP** from the AWS Console or CLI.
-2. Open your browser and navigate to:
+2. Open your browser and go to:
 
-```
-http://<your-public-ip>:8080
-```
+   ```
+   http://<your-public-ip>:8080
+   ```
 
-3. Retrieve the initial admin password to unlock Jenkins:
+3. Retrieve the initial admin password:
 
-```bash
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-```
+   ```bash
+   sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+   ```
+
+4. Complete setup with the following credentials:
+
+   - **Install suggested plugins**
+   - **Username:** `jenkins`
+   - **Password:** `jenkins123`
+   - **Confirm password:** `jenkins123`
+   - **Full name:** `jenkins`
+   - **E-mail address:** `jenkins@gmail.com`
+   - **Jenkins URL:** `http://jenkins:8080/`
 
 ---
 
@@ -121,12 +137,3 @@ sudo systemctl enable jenkins
 # Check Jenkins status
 sudo systemctl status jenkins
 ```
-
----
-
-## 📝 Summary of Fixes/Changes:
-- Fixed incorrect `--security-group-ids` syntax (was a comment instead of a value).
-- Added escaping to multiline commands.
-- Added placeholder `<your-ec2-public-ip>` for better clarity.
-- Improved formatting for repository structure.
-- Added clarification notes for security group usage.
