@@ -137,3 +137,12 @@ sudo systemctl enable jenkins
 # Check Jenkins status
 sudo systemctl status jenkins
 ```
+
+---
+
+## 📝 Summary of Fixes/Changes:
+- Fixed incorrect `--security-group-ids` syntax (was a comment instead of a value).
+- Added escaping to multiline commands.
+- Added placeholder `<your-ec2-public-ip>` for better clarity.
+- Improved formatting for repository structure.
+- Added clarification notes for security group usage.
