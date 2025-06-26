@@ -18,9 +18,7 @@ aws ec2 run-instances \
   --image-id ami-020cba7c55df1f615 \
   --instance-type t2.micro \
   --key-name Jenkins-server-KP \
-  --security-group-ids sg-preview-1 \
-  --count 1 \
-  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Server}]'
+  --security-group "edit inound rule | port 22 from myip | port 8080 from myip"
 ```
 
 > 🔐 Replace `sg-preview-1` with your security group ID that allows TCP 22 and 8080 from your IP.
