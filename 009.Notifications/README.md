@@ -105,7 +105,7 @@ stage('Test Slack Failure') {
         sh 'NotARealCommand'
     }
 }
-```
+```  
 
 You’ll receive a red-colored failure message in your Slack channel.
 
@@ -125,6 +125,3 @@ Slack Notifications will look like this:
 
 ---
 
-## 📄 License
-
-This project is open-source and available for educational and testing purposes.
