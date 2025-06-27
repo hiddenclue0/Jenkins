@@ -54,17 +54,6 @@ Before integrating Jenkins with Nexus, I needed to set up credentials in Jenkins
 
 ---
 
-## 🧰 Summary
-
-By completing this setup:
-- I created a private Maven repository called `vprofile-repo`.
-- I configured Jenkins to authenticate with Nexus using saved credentials.
-- I laid the foundation to upload and version artifacts via my Jenkins CI/CD pipeline.
-
-In the next step, I’ll write the pipeline code that will build my project and push the artifact into the Nexus repository.
-
----
-
 
 ## 📋 Jenkinsfile Pipeline Overview
 
