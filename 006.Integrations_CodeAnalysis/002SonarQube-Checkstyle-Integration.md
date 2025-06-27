@@ -145,8 +145,7 @@ pipeline {
 
 ## 📊 CI/CD Workflow Diagram
 
-```mermaid
-graph TD
+```
     A[Code Commit] --> B[Jenkins CI Trigger]
     B --> C[Build & Unit Test]
     C --> D[Checkstyle]
