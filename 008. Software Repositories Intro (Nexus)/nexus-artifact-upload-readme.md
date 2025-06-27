@@ -1,6 +1,6 @@
 # 📦 Uploading Artifacts to Nexus Repository from Jenkins
 
-In this guide, I document how I configured my Jenkins pipeline to upload artifacts (build outputs) to a **Nexus Repository Manager**. This setup allows me to version and store application artifacts, making them available for future deployments or automation workflows.
+I documented here how I configured my Jenkins pipeline to upload artifacts (build outputs) to a **Nexus Repository Manager**. This setup allows me to version and store application artifacts, making them available for future deployments or automation workflows.
 
 ---
 
