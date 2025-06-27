@@ -130,6 +130,8 @@ pipeline {
         }
 	}
 }
+
+```
 ---
 
 ## 🤖 How I Write and Troubleshoot Pipeline Code
