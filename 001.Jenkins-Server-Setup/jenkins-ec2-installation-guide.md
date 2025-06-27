@@ -1,101 +1,90 @@
 # 🚀 Jenkins Installation on AWS EC2 (Ubuntu/Debian)
 
-This guide provides step-by-step instructions to deploy **Jenkins** on an **AWS EC2 instance** running Ubuntu or Debian.
+This guide explains how I deployed **Jenkins** on an **AWS EC2 instance** running **Ubuntu 24.04 LTS** (or Debian). It includes everything from EC2 launch to Jenkins installation and setup using a simple shell script.
 
 ---
 
-## 🚀 Launching the EC2 Instance
+## ☁️ 1. Launch EC2 Instance
 
-To begin, I launched a new EC2 instance with the following configuration:
+I launched a new EC2 instance with the following configuration:
 
-- **Name**: Jenkins Server  
-- **AMI**: Ubuntu Server 24.04 LTS  
-- **Instance Type**: t2.medium (or t3.medium for better performance)  
-- **Key Pair**: I created a new key pair and named it `Jenkins-key`  
-- **Security Group**: I created a new group called `Jenkins-sg` with these rules:
-  - Port **22**: SSH access allowed from my IP
-  - Port **8080**: HTTP access from my IP
+- **Name**: `Jenkins Server`
+- **AMI**: Ubuntu Server 24.04 LTS
+- **Instance Type**: `t2.medium` (or `t3.medium` for better performance)
+- **Key Pair**: Created a new key pair named `Jenkins-server-KP.pem`
+- **Security Group**: Created a new group named `jenkins-sg` with these inbound rules:
 
-In the same directory I added the content of my `jenkins-setup.sh` script to automate the Jenkins installation and setup.
+| Port | Protocol | Source        | Purpose         |
+|------|----------|---------------|-----------------|
+| 22   | TCP      | My IP only    | SSH access      |
+| 8080 | TCP      | My IP only    | Jenkins Web UI  |
 
 ---
 
-## 2️⃣ Install Java (Required for Jenkins)
+## 🔐 2. Connect to EC2 via SSH
 
-SSH into your EC2 instance:
+From my terminal, I used the following command:
 
 ```bash
 ssh -i "Jenkins-server-KP.pem" ubuntu@<your-ec2-public-ip>
 ```
 
-Install Java:
-
-```bash
-# Update package index
-sudo apt-get update
-
-# Upgrade packages
-sudo apt-get upgrade -y
-
-# Install OpenJDK 21
-sudo apt-get install openjdk-21-jdk -y
-
-# Verify Java installation
-java -version
-```
+> Replace `<your-ec2-public-ip>` with your instance’s actual public IP address.
 
 ---
 
-## 3️⃣ Install Jenkins
+## ⚙️ 3. Jenkins Installation Script
 
-Run the following commands on your EC2 instance:
+Instead of installing everything manually, I created a script named `jenkins-setup.sh` to automate the entire process.
+
+### 📄 `jenkins-setup.sh`
 
 ```bash
-# Download Jenkins GPG key
-sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+#!/bin/bash
+
+# Update system packages
+sudo apt update
+
+# Install Java (JDK 17 and 21)
+sudo apt install openjdk-17-jdk -y
+sudo apt install openjdk-21-jdk -y
+
+# Add Jenkins GPG key
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
 
 # Add Jenkins repository
-echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
-  | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+https://pkg.jenkins.io/debian-stable binary/" | sudo tee \
+/etc/apt/sources.list.d/jenkins.list > /dev/null
 
-# Update package index and install Jenkins
+# Update and install Jenkins
 sudo apt-get update
 sudo apt-get install jenkins -y
 ```
 
 ---
 
-## 4️⃣ Start and Enable Jenkins
+## ▶️ 4. Start and Enable Jenkins
 
 ```bash
-# Start Jenkins
 sudo systemctl start jenkins
-
-# Enable Jenkins to start on boot
 sudo systemctl enable jenkins
-
-# Check Jenkins status
 sudo systemctl status jenkins
 ```
 
 ---
 
-## 5️⃣ Access Jenkins
+## 🌐 5. Access Jenkins
 
-1. Find your EC2 **public IP** from the AWS Console or CLI.
-2. Open your browser and go to:
+1. Open your browser and go to: `http://<your-ec2-public-ip>:8080`
+2. Retrieve the initial admin password:
 
-   ```
-   http://<your-public-ip>:8080
-   ```
+```bash
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
 
-3. Retrieve the initial admin password:
-
-   ```bash
-   sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-   ```
-
-4. Complete setup with the following credentials:
+3. Complete setup with the following credentials:
 
    - **Install suggested plugins**
    - **Username:** `jenkins`
@@ -107,35 +96,21 @@ sudo systemctl status jenkins
 
 ---
 
-## 📁 Recommended GitHub Repository Structure
+---
+
+## 🗂️ Recommended Repository Structure
 
 ```
 Jenkins/
 └── 1.Installation/
-    ├── Jenkins-server-KP.pem
+    ├── jenkins-setup.sh
     └── jenkins-ec2-installation-guide.md
 ```
 
 ---
 
-## ✅ Useful Commands
+## ✅ Summary
 
-```bash
-# Start Jenkins
-sudo systemctl start jenkins
-
-# Enable Jenkins on boot
-sudo systemctl enable jenkins
-
-# Check Jenkins status
-sudo systemctl status jenkins
-```
-
----
-
-## 📝 Summary of Fixes/Changes:
-- Fixed incorrect `--security-group-ids` syntax (was a comment instead of a value).
-- Added escaping to multiline commands.
-- Added placeholder `<your-ec2-public-ip>` for better clarity.
-- Improved formatting for repository structure.
-- Added clarification notes for security group usage.
+- Automated Jenkins setup using a shell script.
+- Secure EC2 launch with proper security group rules.
+- Ready-to-use repository structure for DevOps projects.

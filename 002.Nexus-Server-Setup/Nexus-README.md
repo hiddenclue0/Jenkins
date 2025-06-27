@@ -1,66 +1,133 @@
 # 📦 Nexus Repository Manager Setup on AWS EC2
 
-This document describes how I deployed **Nexus Repository Manager** on an EC2 instance running Amazon Linux 2023, set up security groups, and automated the installation using a shell script.
+This guide explains how I deployed **Nexus Repository Manager** on an **AWS EC2 instance** running **Amazon Linux 2023**. It includes EC2 setup, security group configuration, and automated installation using a custom shell script.
 
 ---
 
-## 🚀 Launching the EC2 Instance
+## ☁️ 1. Launch EC2 Instance
 
-To begin, I launched a new EC2 instance with the following configuration:
+I launched a new EC2 instance with the following configuration:
 
-- **Name**: Nexus Server  
-- **AMI**: Amazon Linux 2023  
-- **Instance Type**: t2.medium (or t3.medium for better performance)  
-- **Key Pair**: I created a new key pair and named it `Nexus-key`  
-- **Security Group**: I created a new group called `nexus-sg` with these rules:
-  - Port **22**: SSH access allowed from my IP
-  - Port **8081**: HTTP access from my IP
-  - Port **8081**: Also allowed access from **Jenkins Security Group**, since Jenkins needs to upload artifacts to Nexus
+- **Name**: `Nexus Server`
+- **AMI**: Amazon Linux 2023
+- **Instance Type**: `t2.medium` (or `t3.medium` for better performance)
+- **Key Pair**: Created a new key pair named `Nexus-key.pem`
+- **Security Group**: Created a group called `nexus-sg` with these inbound rules:
 
-In the **Advanced Details** section during instance launch, I added the content of my `nexus-setup.sh` script into the **User Data** field to automate the Nexus installation and setup.
+| Port  | Protocol | Source                | Purpose                     |
+|-------|----------|------------------------|-----------------------------|
+| 22    | TCP      | My IP Address          | SSH access                  |
+| 8081  | TCP      | My IP Address          | Nexus web UI                |
+| 8081  | TCP      | Jenkins Security Group | Allow Jenkins to upload artifacts |
+
+In the directory I added my `nexus-setup.sh` script to automate Nexus installation.
 
 ---
 
-## 🔧 Accessing Nexus
+## 🔧 2. Access Nexus Server
 
-After the instance was up and running, I accessed Nexus as follows:
+Once the EC2 instance was running, I accessed Nexus with the steps below:
 
-1. I SSHed into the instance using:
+1. SSH into the instance:
    ```bash
-   ssh -i Nexus-key.pem ec2-user@<Public-IP>
+   ssh -i Nexus-key.pem ec2-user@<your-ec2-public-ip>
    ```
 
-2. Then I switched to the root user and checked if the Nexus service was running:
+2. Switch to the root user and check the Nexus service:
    ```bash
-   sudo su
+   sudo -i
    systemctl status nexus
    ```
 
-3. In my browser, I opened the Nexus dashboard at:  
-   `http://<Public-IP>:8081`
+3. Open the Nexus web interface in your browser:
+   ```
+   http://<your-ec2-public-ip>:8081
+   ```
 
-4. To log in for the first time, I fetched the initial admin password:
+4. Retrieve the initial admin password:
    ```bash
    cat /opt/sonatype-work/nexus3/admin.password
    ```
 
-5. I logged in with:
-   - Username: `admin`
-   - Password: (copied from the file)
+5. Login using:
+   - **Username**: `admin`
+   - **Password**: (from the file above)
 
-6. Then, I changed the default password to something easier to remember (e.g., `admin123`) and enabled **anonymous access** so that artifacts could be downloaded without logging in.
-
----
-
-## ✅ Notes
-
-- I made sure VPNs or browser proxies were disabled while accessing the Nexus web interface to avoid connectivity issues.
-- This Nexus instance will be used to store build artifacts uploaded from Jenkins jobs.
-- The credentials (like `admin/admin123`) were saved securely for use with Jenkins Nexus plugins.
+6. Set a new password (e.g., `admin123`) and enable **anonymous access** so users or Jenkins can download artifacts without logging in.
 
 ---
 
-## 📁 Home Directory & Tools
+## 🧾 3. Notes
 
-- Nexus was installed in: `/opt/nexus`
-- Java 17 was installed automatically via the `nexus-setup.sh` script
+- I made sure VPNs or proxies were disabled while accessing the web UI to avoid connection issues.
+- Nexus will serve as a private artifact repository for my Jenkins CI/CD pipeline.
+- Credentials like `admin/admin123` were stored securely for integration with Jenkins plugins.
+
+---
+
+## 🗂️ 4. Directory and Tools
+
+- Nexus was installed at: `/opt/nexus`
+- Java 17 (Amazon Corretto) was installed automatically using the script below.
+
+---
+
+## 📜 5. `nexus-setup.sh` Script
+
+Below is the full installation script used to automate the Nexus setup. This can be reused as EC2  or executed manually.
+
+```bash
+#!/bin/bash
+
+sudo rpm --import https://yum.corretto.aws/corretto.key
+sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
+
+sudo yum install -y java-17-amazon-corretto-devel wget -y
+
+mkdir -p /opt/nexus/
+mkdir -p /tmp/nexus/
+cd /tmp/nexus/
+NEXUSURL="https://download.sonatype.com/nexus/3/nexus-unix-x86-64-3.78.0-14.tar.gz"
+wget $NEXUSURL -O nexus.tar.gz
+sleep 10
+EXTOUT=`tar xzvf nexus.tar.gz`
+NEXUSDIR=`echo $EXTOUT | cut -d '/' -f1`
+sleep 5
+rm -rf /tmp/nexus/nexus.tar.gz
+cp -r /tmp/nexus/* /opt/nexus/
+sleep 5
+useradd nexus
+chown -R nexus.nexus /opt/nexus
+cat <<EOT>> /etc/systemd/system/nexus.service
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+ExecStart=/opt/nexus/$NEXUSDIR/bin/nexus start
+ExecStop=/opt/nexus/$NEXUSDIR/bin/nexus stop
+User=nexus
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+EOT
+
+echo 'run_as_user="nexus"' > /opt/nexus/$NEXUSDIR/bin/nexus.rc
+systemctl daemon-reload
+systemctl start nexus
+systemctl enable nexus
+```
+
+---
+
+## ✅ Summary
+
+- Secure EC2 instance provisioning with proper access controls.
+- Automated installation of Java and Nexus using a custom script.
+- Ready-to-use private repository accessible from Jenkins and developers.
+
+---
