@@ -15,6 +15,7 @@ Ensure your **security group** allows access from your IP to:
 
 ```bash
 aws ec2 run-instances \
+  --Ubuntu Server 24.04 LTS (jenkins-server)
   --image-id ami-020cba7c55df1f615 \
   --instance-type t2.micro \
   --key-name Jenkins-server-KP \
