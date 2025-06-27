@@ -4,25 +4,19 @@ This guide provides step-by-step instructions to deploy **Jenkins** on an **AWS 
 
 ---
 
-## 1️⃣ Launch an EC2 Instance
+## 🚀 Launching the EC2 Instance
 
-Ensure your **security group** allows access from your IP to:
+To begin, I launched a new EC2 instance with the following configuration:
 
-- **SSH** (port **22**)
-- **Jenkins Web UI** (port **8080**)
+- **Name**: Jenkins Server  
+- **AMI**: Ubuntu Server 24.04 LTS  
+- **Instance Type**: t2.medium (or t3.medium for better performance)  
+- **Key Pair**: I created a new key pair and named it `Jenkins-key`  
+- **Security Group**: I created a new group called `Jenkins-sg` with these rules:
+  - Port **22**: SSH access allowed from my IP
+  - Port **8080**: HTTP access from my IP
 
-### 🖥️ Launch via AWS CLI
-
-```bash
-aws ec2 run-instances \
-  --Ubuntu Server 24.04 LTS (jenkins-server)
-  --image-id ami-020cba7c55df1f615 \
-  --instance-type t2.micro \
-  --key-name Jenkins-server-KP \
-  --security-group "edit inound rule | port 22 from myip | port 8080 from myip"
-```
-
-> 🔐 Replace `sg-preview-1` with your security group ID that allows TCP 22 and 8080 from your IP.
+In the same directory I added the content of my `jenkins-setup.sh` script to automate the Jenkins installation and setup.
 
 ---
 
