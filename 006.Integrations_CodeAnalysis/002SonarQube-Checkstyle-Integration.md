@@ -65,8 +65,7 @@ stage("Quality Gate") {
     }
 }
 ```
-# Append the pipeline code to the existing README content
-pipeline_code = """
+
 ---
 
 ## 🧾 Full Jenkins Pipeline Code
