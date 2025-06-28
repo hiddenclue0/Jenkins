@@ -46,7 +46,7 @@ Once the EC2 instance was running, I accessed Nexus with the steps below:
 
 4. Retrieve the initial admin password:
    ```bash
-   cat /opt/sonatype-work/nexus3/admin.password
+   cat /opt/nexus/sonatype-work/nexus3/admin.password
    ```
 
 5. Login using:
