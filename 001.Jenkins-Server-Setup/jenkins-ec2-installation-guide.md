@@ -28,9 +28,9 @@ This guide provides a complete walkthrough for setting up Jenkins on an AWS EC2 
 
 ## 🔐 2. SSH Access to EC2
 
-\`\`\`bash
+```bash
 ssh -i "Jenkins-server-KP.pem" ubuntu@<your-ec2-public-ip>
-\`\`\`
+```
 
 ---
 
@@ -38,7 +38,7 @@ ssh -i "Jenkins-server-KP.pem" ubuntu@<your-ec2-public-ip>
 
 ### 📄 jenkins-setup.sh
 
-\`\`\`bash
+```bash
 #!/bin/bash
 
 sudo apt update
@@ -51,17 +51,17 @@ echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkin
 
 sudo apt-get update
 sudo apt-get install jenkins -y
-\`\`\`
+```
 
 ---
 
 ## ▶️ 4. Start Jenkins
 
-\`\`\`bash
+```bash
 sudo systemctl start jenkins
 sudo systemctl enable jenkins
 sudo systemctl status jenkins
-\`\`\`
+```
 
 ---
 
@@ -69,9 +69,9 @@ sudo systemctl status jenkins
 
 - URL: http://<your-ec2-public-ip>:8080
 - Unlock Jenkins:
-  \`\`\`bash
+  ```bash
   sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-  \`\`\`
+  ```
 - Create admin user:
   - Username: jenkins  
   - Password: jenkins123  
@@ -98,7 +98,7 @@ Under **Manage Jenkins > Global Tool Configuration**:
 - Add Maven 3.9
 
 Example:
-\`\`\`text
+```text
 JDK:
   Name: JDK17
   Path: /usr/lib/jvm/java-17-openjdk-amd64
@@ -106,7 +106,7 @@ JDK:
 Maven:
   Name: MAVEN3.9
   Auto install or provide binary path
-\`\`\`
+```
 
 ---
 
@@ -117,10 +117,10 @@ Maven:
 ### Steps to Fix:
 
 1. **Check disk space**:
-   \`\`\`bash
+   ```bash
    df -h
    fdisk -l
-   \`\`\`
+   ```
 2. **Modify volume size in EC2** (from 8GB to 20GB+):
    - EC2 Dashboard → Elastic Block Store → Volumes  
    - Modify Volume → Set Size → 20GB → Save
@@ -129,10 +129,10 @@ Maven:
    - EC2 → Actions → Reboot
 
 4. **Verify new size after reboot**:
-   \`\`\`bash
+   ```bash
    df -h
    fdisk -l
-   \`\`\`
+   ```
 
 ---
 
@@ -149,22 +149,22 @@ Maven:
 
 ## 🔁 10. Steps for Continuous Integration Pipeline
 
-1. **Create Freestyle Job** \`vprofile-build\`  
-   - Set GitHub repo: \`https://github.com/hiddenclue0/vprofileApp-jenkins-cicd-automation.git\`  
-   - Branch: \`main\`  
+1. **Create Freestyle Job** `vprofile-build`  
+   - Set GitHub repo: `https://github.com/hiddenclue0/vprofileApp-jenkins-cicd-automation.git`  
+   - Branch: `main`  
 
 2. **Select JDK 17 and Maven 3.9**
 
 3. **Build Step**: Use "Invoke Top-Level Maven Targets"  
    - Maven Version: MAVEN3.9  
-   - Goals: \`clean install\`
+   - Goals: `clean install`
 
 4. **Post-Build Actions**:  
-   - Archive artifact: \`**/*.war\`
+   - Archive artifact: `**/*.war`
 
-5. **New Job (Optional)**: \`vprofile-test\`  
-   - Copy from \`vprofile-build\`  
-   - Change Maven Goal: \`test\`  
+5. **New Job (Optional)**: `vprofile-test`  
+   - Copy from `vprofile-build`  
+   - Change Maven Goal: `test`  
    - Test different JDKs and Maven versions
 
 ---
@@ -191,7 +191,7 @@ Maven:
 
 ## 📂 12. Recommended Repository Structure
 
-\`\`\`
+```
 Jenkins/
 ├── 1.Installation/
 │   ├── jenkins-setup.sh
@@ -200,13 +200,13 @@ Jenkins/
 │   └── jenkins-nexus-sonarqube-sg.md
 ├── 3.Pipeline-Jobs/
 │   └── vprofile-ci-job.md
-\`\`\`
+```
 
 ---
 
 ## 🧾 13. Jenkins Pipeline Code (Declarative)
 
-\`\`\`groovy
+```groovy
 pipeline {
 	agent any
 
@@ -242,7 +242,7 @@ pipeline {
 		}
 	}
 }
-\`\`\`
+```
 
 ---
 
