@@ -11,18 +11,14 @@ This group manages inbound access to my Jenkins server, which orchestrates the C
 
 I created a security group called `jenkins-sg` with the following rules:
 
-| Port | Protocol | Source         | Purpose        |
-|------|----------|----------------|----------------|
-| 22   | TCP      | My IP Address  | SSH access     |
-| 8080 | TCP      | My IP Address  | Jenkins web UI |
+| Port | Protocol | Source                | Purpose                                 |
+|------|----------|-----------------------|-----------------------------------------|
+| 22   | TCP      | My IP Address         | SSH access                              |
+| 8080 | TCP      | My IP Address         | Jenkins web UI                          |
+| 8080 | TCP      | SonarQube SG (ID)     | Webhook & analysis communication        |
+| 8080 | TCP      | Nexus SG (ID)         | Allow Nexus to trigger Jenkins (if needed) |
 
-To enhance integration within the pipeline, Jenkins also needs to communicate with SonarQube and vice versa. To support this, I added an internal rule:
-
-| Port | Protocol | Source             | Purpose                          |
-|------|----------|--------------------|----------------------------------|
-| 8080 | TCP      | SonarQube SG (ID)  | Webhook & analysis communication |
-
-> I restricted external access to port 8080 (Jenkins UI) to my IP only, while internally allowing SonarQube to communicate with Jenkins on the same port for webhook callbacks.
+> Port 8080 is restricted externally to my IP, but internally allows SonarQube and Nexus to communicate with Jenkins for webhook callbacks or artifact triggers if required.
 
 ---
 
@@ -33,13 +29,14 @@ This group governs access to the Nexus repository, which Jenkins uses to upload 
 
 Here’s how I configured the `nexus-sg`:
 
-| Port | Protocol | Source                | Purpose                           |
-|------|----------|------------------------|-----------------------------------|
-| 22   | TCP      | My IP Address          | SSH access                        |
-| 8081 | TCP      | My IP Address          | Nexus web UI                      |
-| 8081 | TCP      | Jenkins Security Group | Allow Jenkins to upload artifacts |
+| Port | Protocol | Source                | Purpose                                 |
+|------|----------|-----------------------|-----------------------------------------|
+| 22   | TCP      | My IP Address         | SSH access                              |
+| 8081 | TCP      | My IP Address         | Nexus web UI                            |
+| 8081 | TCP      | Jenkins SG (ID)       | Allow Jenkins to upload artifacts       |
+| 8081 | TCP      | SonarQube SG (ID)     | Allow SonarQube to fetch dependencies (if needed) |
 
-> Jenkins requires access to Nexus on port 8081 to push build artifacts. I allowed internal access from the Jenkins SG for this purpose.
+> Jenkins requires access to Nexus on port 8081 to push build artifacts. Optionally, SonarQube can access Nexus if it needs to fetch dependencies for analysis.
 
 ---
 
@@ -51,12 +48,13 @@ This group controls access to the SonarQube server, used for static code analysi
 Here’s how I set up `sonar-sg`:
 
 | Port | Protocol | Source                | Purpose                                 |
-|------|----------|------------------------|-----------------------------------------|
-| 22   | TCP      | My IP Address          | SSH access                              |
-| 80   | TCP      | My IP Address          | SonarQube web UI                        |
-| 80   | TCP      | Jenkins Security Group | Jenkins to send code analysis results   |
+|------|----------|-----------------------|-----------------------------------------|
+| 22   | TCP      | My IP Address         | SSH access                              |
+| 9000 | TCP      | My IP Address         | SonarQube web UI                        |
+| 9000 | TCP      | Jenkins SG (ID)       | Jenkins to send code analysis results   |
+| 9000 | TCP      | Nexus SG (ID)         | Allow Nexus to trigger analysis (if needed) |
 
-> Port 80 is open to Jenkins internally so it can post analysis results to the SonarQube server.
+> Port 9000 is open to Jenkins internally so it can post analysis results to the SonarQube server. Optionally, Nexus can communicate if your workflow requires it.
 
 ---
 
@@ -64,11 +62,11 @@ Here’s how I set up `sonar-sg`:
 
 All three services — Jenkins, Nexus, and SonarQube — are deployed on separate EC2 instances within the **same VPC**, allowing them to communicate over private IPs using their security groups. Here’s how the port exposure is managed across services:
 
-| Service     | Exposed Ports | Access Scope               |
-|-------------|----------------|-----------------------------|
-| Jenkins     | 8080           | My IP + SonarQube SG (8080) |
-| Nexus       | 8081           | My IP + Jenkins SG (8081)   |
-| SonarQube   | 80, 9000       | My IP + Jenkins SG (80)     |
+| Service     | Exposed Ports | Access Scope                                 |
+|-------------|--------------|----------------------------------------------|
+| Jenkins     | 8080         | My IP + SonarQube SG (8080) + Nexus SG (8080)|
+| Nexus       | 8081         | My IP + Jenkins SG (8081) + SonarQube SG (8081)|
+| SonarQube   | 9000         | My IP + Jenkins SG (9000) + Nexus SG (9000)  |
 
 ---
 
