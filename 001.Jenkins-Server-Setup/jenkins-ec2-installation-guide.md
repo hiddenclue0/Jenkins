@@ -83,8 +83,9 @@ sudo systemctl status jenkins
 
 Install **Suggested Plugins** during setup, then add these via **Manage Jenkins > Plugins**:
 - Maven Integration
+- Pipeline Maven Integration
 - GitHub Integration
-- Pipeline
+- Pipeline: Stage View
 - SonarQube Scanner
 - Nexus Artifact Uploader
 
