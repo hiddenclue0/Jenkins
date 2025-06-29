@@ -88,6 +88,8 @@ Install **Suggested Plugins** during setup, then add these via **Manage Jenkins 
 - Pipeline: Stage View
 - SonarQube Scanner
 - Nexus Artifact Uploader
+- Pipeline Utility Steps
+- Build Timestamp
 
 ---
 
